@@ -3,7 +3,7 @@ version: '3'
 
 services:
   greenmail:
-    image: greenmail/standalone:latest
+    image: greenmail/standalone:2.1.0-alpha-4
     environment:
       - JAVA_OPTS=-Dgreenmail.verbose
     ports:
