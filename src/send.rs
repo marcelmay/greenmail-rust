@@ -1,9 +1,13 @@
 #![allow(dead_code)]
 
-use lettre::message::header::ContentType;
-use lettre::message::Mailbox;
-use lettre::transport::smtp::authentication::Credentials;
-use lettre::{Message, SmtpTransport, Transport};
+use lettre::{
+    message::header::ContentType,
+    message::Mailbox,
+    transport::smtp::authentication::Credentials,
+    Message,
+    SmtpTransport,
+    Transport
+};
 
 use dotenvy::dotenv;
 use std::env;
@@ -22,23 +26,19 @@ pub fn mailer() -> SmtpTransport {
     let smtp_host = env::var("SMTP_HOST").expect("SMTP_HOST not defined");
     let smtp_port = env::var("SMTP_PORT").expect("SMTP_PORT not defined");
     println!(
-        "connecting to smtp server: {smtp_host}, with username: {}",
+        "connecting to smtp server: {smtp_host}:{smtp_port}, with username: {}",
         smtp_user.clone()
     );
 
     let creds = Credentials::new(smtp_user, smtp_password);
 
-    
-    SmtpTransport::relay(&smtp_host)
-        .unwrap()
+    SmtpTransport::builder_dangerous(&smtp_host)
         .port(smtp_port.parse::<u16>().unwrap())
         .credentials(creds)
         .build()
 }
 
 pub fn compose(mail: &Mail) -> Message {
-    
-
     Message::builder()
         .from(mail.from.clone())
         .reply_to(mail.from.clone())

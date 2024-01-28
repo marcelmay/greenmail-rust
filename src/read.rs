@@ -1,7 +1,5 @@
 #![allow(dead_code)]
 
-
-
 use dotenvy::dotenv;
 use std::env;
 
@@ -31,7 +29,7 @@ pub fn mailer() -> imap::Session<native_tls::TlsStream<std::net::TcpStream>> {
         "connecting to imap server: {imap_host}:{imap_port}, with username: {}",
         user.clone()
     );
-    let tls = native_tls::TlsConnector::builder().build().unwrap();
+    let tls = native_tls::TlsConnector::builder().danger_accept_invalid_certs(true).build().unwrap();
 
     // we pass in the domain twice to check that the server's TLS
     // certificate is valid for the domain we're connecting to.
@@ -44,17 +42,17 @@ pub fn mailer() -> imap::Session<native_tls::TlsStream<std::net::TcpStream>> {
 
     // the client we have here is unauthenticated.
     // to do anything useful with the e-mails, we need to log in
-    let mut imap_session = client.login(user, password).map_err(|e| e.0).unwrap();
+    let imap_session = client.login(user, password).map_err(|e| e.0).unwrap();
 
-    // we want to fetch the first email in the INBOX mailbox
-    imap_session.select("INBOX").unwrap();
     imap_session
 }
 
-// pub fn read_mail(mut session: imap::Session<native_tls::TlsStream<std::net::TcpStream>>) {
 fn read_mail(client: ImapClient) {
     let mut session = client.session;
-    let messages = session.fetch("1", "RFC822").unwrap();
+
+    // we want to fetch the first email in the INBOX mailbox
+    session.select("INBOX").expect("Can not open INBOX");
+    let messages = session.fetch("1", "RFC822").expect("Faild to fetch message");
     let message = messages.iter().next().unwrap();
 
     // extract the message's body
